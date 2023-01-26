@@ -6,8 +6,8 @@ public class CellsGrid : MonoBehaviour
 {
     #region Expose
 
-    [SerializeField] int _lineCount;
-    [SerializeField] int _columnCount;
+    [SerializeField] public int _lineCount;
+    [SerializeField] public int _columnCount;
 
     [SerializeField] Cell _cellPrefab;
 
@@ -37,10 +37,21 @@ public class CellsGrid : MonoBehaviour
 
     #region Methods
 
-    void InitGrid()
+    public void InitGrid()
     {
+
+        foreach (Cell cell1 in FindObjectsOfType<Cell>())
+        {
+            Destroy(cell1.gameObject);
+        }
+        // Initialisation tableau
         _cellGrid = new Cell[_columnCount, _lineCount];
 
+        // Initialisation des listes
+        _aliveCells= new List<Cell>();
+        _candidateCells = new HashSet<Cell>();
+
+        // Création de notre grille de cellules
         for (int line = 0; line < _lineCount; line++)
         {
             for (int column = 0; column < _columnCount; column++)
@@ -55,11 +66,31 @@ public class CellsGrid : MonoBehaviour
                 cell._grid = this;
             }
         }
+        PositionCamera();
+    }
+
+    public void SimulationStep()
+    {
+        // Dans un premier temps on compte nos cellules
+        CountAliveNeighborsToCandidate();
+
+        // Dans un 2e temps on applique les règles de survie
+        ApplyRulesForCandidates();
+    }
+
+    private void PositionCamera()
+    {
+        Camera camera = Camera.main;
+        camera.transform.position = new Vector3(_columnCount * .5f, _lineCount * .5f, camera.transform.position.z);
+        float targetHeight = _columnCount / camera.aspect;
+
+        camera.orthographicSize = (Mathf.Max(_lineCount, targetHeight) + 4) * .5f; 
     }
 
     #endregion
 
-    #region FirstStep
+    #region FirstStep Count Alive
+
 
     private void CountAliveNeighborsToCandidate()
     {
@@ -102,7 +133,7 @@ public class CellsGrid : MonoBehaviour
 
     #endregion
 
-    #region SecondStep
+    #region SecondStep Apply Rules
 
     private void ApplyRulesForCandidates()
     {
@@ -126,6 +157,7 @@ public class CellsGrid : MonoBehaviour
             {
                 cell.Death();
             }
+            cell._aliveNeighborsCount= 0;
         }
     }
 

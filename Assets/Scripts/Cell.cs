@@ -93,12 +93,12 @@ public class Cell : MonoBehaviour
 
     private void OnMouseOver()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButtonDown(0))
         {
             Birth();
             _grid.AddAliveCell(this);
         }
-        else if (Input.GetMouseButton(1))
+        else if (Input.GetMouseButtonDown(1))
         {
             Death();
             _grid.RemoveAliveCell(this);
